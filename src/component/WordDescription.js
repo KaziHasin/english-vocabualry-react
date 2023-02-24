@@ -1,56 +1,241 @@
 import React, { Component } from "react";
-import styled from "styled-components";
+import styled, { keyframes }from "styled-components";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+
+import Lodder from "./Lodder";
 
 export default class WordDescription extends Component {
-  state = {
-    word: this.props.word,
+   
+  constructor(props) {
+    super(props);
+    this.state = {
+      word: this.props.word,
+      data: null,
+      error: null,
+      loading: true,
+      isPlaying: false,
+     
+    };
+
+     this.audioRef = React.createRef();
+    
+  }
+  
+ 
+  // pronunciation of the word 
+  handlePlay = () => {
+    
+
+   
+            // console.log(this.audioRef.current.src.length);
+      this.audioRef.current.play();
+      this.setState({ isPlaying: true });
+      setTimeout(() => {
+        this.setState({ isPlaying: false });
+      }, 1000);
+    
   };
+  
 
+  // call the method after dom render 
+  componentDidMount() {
+    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${ this.state.word}`)
+      .then(response => response.json())
+      .then(data => {
+        setTimeout(() => {
+        this.setState({ data, loading: false });
+
+      }, 1000);
+        
+      })
+      .catch(error => {
+        this.setState({ error, loading: false });
+      });
+     
+  }
+
+  
   render() {
-    console.log(this.state.word);
 
+    const { data, error, loading } = this.state;
+    // let definitionStr = [];
+
+    // {data && data.map((item)  => {
+    
+        
+    // })}
+
+
+
+
+   
+
+    
+    if (loading) {
+      return <Lodder/>;
+    }
+
+    if (error) {
+      return <p>Error: {error.message}</p>;
+    }
+    
     return (
       <>
-        <p>
+       {data && data.map((item)  => {
+  
+  const {audio} = item.phonetics[0];
+  const [...synonyms] = item.meanings[0].definitions[0].synonyms
+  const [...definition] = item.meanings[0].definitions;
+  let definitionStr = [];
+  definitionStr = item.meanings[0].definitions.map((item2) => item2.definition).join("").split(';')
+
+ 
+
+ 
+
+          return(
+        <Container key={item}>
           <FirstPart>
-            <Audio></Audio>
-            <span>Apple</span>
+            <Audio onClick={this.handlePlay}>
+           
+              </Audio>
+              {this.state.isPlaying &&
+              <Sound>
+             
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </Sound>
+  }
+              <audio ref={this.audioRef} src={audio} />
+            <span>{item.word.charAt(0).toUpperCase() + item.word.slice(1)}</span>
+            <span>{(item.phonetics[0].text !== undefined)? item.phonetics[0].text : item.phonetics[1].text}</span>
           </FirstPart>
 
           <SecondPart>
-            <span>Verb</span>
+            <span>{item.meanings[0].partOfSpeech}</span>
             <br />
 
-            <span>Lorem ipsum dolor sit amet consectetur.</span>
+            <span>{definition[0].definition}</span>
           </SecondPart>
 
           <ThirdPart>
             <span>Similar:</span>
 
             <span>
-              <small>Apple</small>
-              <small>Apple</small>
-              <small>Apple</small>
-              <small>Apple</small>
-              <small>Apple</small>
-              <small>Apple</small>
-              <small>Apple</small> <small>Apple</small>
+
+              {
+                
+                synonyms.length !== 0 ?  (
+                  synonyms.map(syn => <small key={syn}>{syn.charAt(0).toUpperCase() + syn.slice(1)}</small>)
+                )
+                  :(
+                    
+                    definitionStr.map((syn, index)=>{
+                        const words = syn.split(" ")
+                        const lastWord = words[words.length - 1]; 
+
+                        return  (lastWord.length > 5) && <small key={index}>{lastWord.charAt(0).toUpperCase() + lastWord.slice(1)}</small>
+                       
+
+                    })
+                  )
+
+
+                
+
+              }
+              
             </span>
 
-            <DownArrow></DownArrow>
+            
           </ThirdPart>
-        </p>
+        </Container>
+
+       )
+    
+  })}
       </>
     );
   }
 }
+const Container = styled.p`
 
+`
 const FirstPart = styled.span`
   display: flex;
+  flex-wrap: wrap;
   margin: 10px 0;
+ 
+  
+  span:last-child{
+
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  audio {
+   display: none;
+  }
+
+  
+
 `;
+
+const fade = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+
+const Sound = styled.span`
+    
+    position: relative;
+    animation: ${fade} 1s ease-in-out 2;
+    
+  
+    span {
+      width: 10px;
+      height: 2px;
+      background-color: #3867d6;
+      display: inline-block;
+      position: absolute;
+      transition: all 1s;
+      
+      
+     
+    }
+
+    span:nth-of-type(1) {
+      top: 4px;
+      left: -10px;
+      transform: rotate(-12deg) translateY(-4px);
+      animation-delay: 0s;
+
+      
+}
+
+span:nth-of-type(2) {
+      top:11px;
+      left: -10px;
+      animation-delay: 0.5s;
+      
+}
+
+span:nth-of-type(3) {
+      top: 18px;
+      left: -10px;
+      transform: rotate(12deg) translateY(4px);
+      animation-delay: 0.10s;
+}
+
+    
+
+`
 const SecondPart = styled.span`
   margin: 10px 0;
 
@@ -58,6 +243,7 @@ const SecondPart = styled.span`
     font-family: Arial, Helvetica, sans-serif;
     opacity: 0.8;
     margin-left: 10px;
+    font-size: 12px;
   }
 `;
 
@@ -86,12 +272,11 @@ const ThirdPart = styled.span`
   }
 `;
 
-const DownArrow = styled(KeyboardArrowDownIcon)`
-  opacity: 0.6;
-  cursor: pointer;
-`;
+
 const Audio = styled(VolumeUpIcon)`
   color: #3867d6;
   margin-right: 4px;
   cursor: pointer;
+ 
+  
 `;
