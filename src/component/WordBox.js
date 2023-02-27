@@ -1,16 +1,19 @@
 import React, { Component } from "react";
 import styled from "styled-components";
+import InfiniteScroll from "react-infinite-scroll-component";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import word from "../words.json";
 import WordDescription from "./WordDescription";
+import Lodder from "./Lodder";
 
 export default class WordBox extends Component {
   state = {
     isOpen: false,
-    word: word,
+    words: word,
     openIndex: -1,
     openLetter: null,
+    numWords : 6,
   };
 
   handleToggle = (index, openLetter) => {
@@ -27,11 +30,45 @@ export default class WordBox extends Component {
       this.setState({ isOpen: true });
     }
   };
+
+  fetchMoreData = () => {
+    
+    setTimeout(() => {
+      this.setState({
+        numWords: this.state.numWords+3
+      });
+    }, 2500);
+  };
+
+
   render() {
-    const { word } = this.state;
+    const { words } = this.state;
+    const { numWords } = this.state;
+    const TotalLength = Object.keys(words).length;
+
+    
+  
     return (
       <>
-        {Object.keys(word).map((key) => (
+
+<InfiniteScroll
+          dataLength={numWords}
+          next={this.fetchMoreData}
+          hasMore={numWords < TotalLength ? true: false}
+          loader={<div style={{display:"flex", justifyContent: "center", width: '100%'}}><Lodder/></div>}
+
+          style={{ 
+
+            minHeight: '100vh',
+            maxWidth: '100vw',
+            display: 'flex',
+            flexWrap:' wrap',
+            justifyContent: 'space-between',
+            padding: '15px',
+            overflow: 'hidden'
+          }}
+        >
+        {Object.keys(words).slice(0, numWords).map((key) => (
           <Wordbox key={key}>
             <Words>
               <Boxtitle>
@@ -39,14 +76,16 @@ export default class WordBox extends Component {
                 <span>'{key.toUpperCase()}'</span>
               </Boxtitle>
               <ul>
-                {word[key].slice(0, 5).map((word, index) => (
+                {words[key].slice(0, 5).map((word, index) => (
                   <li key={index}>
-                    <div>{word}</div>
+                    <div>{word.charAt(0).toUpperCase() + word.slice(1)}</div>
 
                     {this.state.isOpen &&
                       this.state.openIndex === index &&
                       this.state.openLetter === key && (
+                       
                         <WordDescription word={word} />
+                       
                       )}
                     <div>
                       <Plussign
@@ -66,6 +105,8 @@ export default class WordBox extends Component {
             </Words>
           </Wordbox>
         ))}
+
+        </InfiniteScroll>
       </>
     );
   }

@@ -14,6 +14,7 @@ export default class WordDescription extends Component {
       error: null,
       loading: true,
       isPlaying: false,
+      isNotAudio: false,
      
     };
 
@@ -26,13 +27,21 @@ export default class WordDescription extends Component {
   handlePlay = () => {
     
 
-   
-            // console.log(this.audioRef.current.src.length);
+        if(this.audioRef.current.src.length === 22) {
+            this.setState({isNotAudio : true})
+
+            setTimeout(() => {
+        this.setState({ isNotAudio: false });
+      }, 1500);
+        }else {
+       console.log(this.audioRef.current.src.length);
       this.audioRef.current.play();
       this.setState({ isPlaying: true });
       setTimeout(() => {
         this.setState({ isPlaying: false });
       }, 1000);
+
+    }
     
   };
   
@@ -58,30 +67,20 @@ export default class WordDescription extends Component {
   render() {
 
     const { data, error, loading } = this.state;
-    // let definitionStr = [];
-
-    // {data && data.map((item)  => {
-    
-        
-    // })}
-
-
-
-
-   
 
     
     if (loading) {
       return <Lodder/>;
     }
 
+
     if (error) {
       return <p>Error: {error.message}</p>;
     }
-    
+  
     return (
       <>
-       {data && data.map((item)  => {
+       {Array.isArray(data) ? data.map((item)  => {
   
   const {audio} = item.phonetics[0];
   const [...synonyms] = item.meanings[0].definitions[0].synonyms
@@ -109,6 +108,14 @@ export default class WordDescription extends Component {
               </Sound>
   }
               <audio ref={this.audioRef} src={audio} />
+              {this.state.isNotAudio &&
+              <NoAdudio>
+                   
+                 No Audio is Available
+
+              </NoAdudio>
+
+       }
             <span>{item.word.charAt(0).toUpperCase() + item.word.slice(1)}</span>
             <span>{(item.phonetics[0].text !== undefined)? item.phonetics[0].text : item.phonetics[1].text}</span>
           </FirstPart>
@@ -155,7 +162,7 @@ export default class WordDescription extends Component {
 
        )
     
-  })}
+  }): <p><strong>Word not found...</strong></p>}
       </>
     );
   }
@@ -167,6 +174,7 @@ const FirstPart = styled.span`
   display: flex;
   flex-wrap: wrap;
   margin: 10px 0;
+  position: relative;
  
   
   span:last-child{
@@ -234,6 +242,22 @@ span:nth-of-type(3) {
 }
 
     
+
+`
+
+const NoAdudio = styled.span`
+   
+   
+   position: absolute;
+      display: inline-block;
+       background-color: #fff;
+       box-shadow: 0 0 4px 2px #f2f2f2;
+       padding: 3px;
+       left: 25px;
+       top: -5px;
+       z-index: 1;
+       border-radius: 8px;
+       
 
 `
 const SecondPart = styled.span`

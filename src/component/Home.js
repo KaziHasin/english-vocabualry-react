@@ -1,9 +1,27 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 import WordBox from "./WordBox";
-
+import Lodder from "./Lodder";
 export default class Home extends Component {
+
+  state = {
+    loading: true,
+  }
+
+  componentDidMount() {
+  
+        setTimeout(() => {
+        this.setState({loading: false });
+
+      }, 2000);
+          
+  }
   render() {
+     
+    if (this.state.loading) {
+      return <Lodder/>;
+    }
+
     return (
       <>
         <Heading>
@@ -23,6 +41,12 @@ const Title = styled.h1`
   font-size: 50px;
   margin: 15px auto;
   text-align: center;
+
+  @media (max-width: 768px){
+
+    font-size: 22px;
+    margin: 20px auto 5px;
+  }
 `;
 
 const Wrapper = styled.div`
