@@ -12,4 +12,8 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
+.pagiActive {
+  background-color: green!important;
+}
+
 

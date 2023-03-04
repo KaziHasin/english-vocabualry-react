@@ -50,12 +50,7 @@ const Title = styled.h1`
 `;
 
 const Wrapper = styled.div`
-  min-height: 100vh;
-  max-width: 100vw;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  padding: 15px;
+  
 
   @media (max-width: 768px) {
     flex-direction: column;
